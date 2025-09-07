@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Smartphone, Star, Tag, Zap, Camera, Gamepad2, Briefcase, Video, Search, Filter, ChevronDown, TrendingUp, Shield, Battery, Cpu } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from "next/navigation";
+import { phoneAPI } from '@/utils/api';
+import { ProtectedRoute } from '@/context/AuthContext';
 
 const PhoneUI = () => {
   const [phones, setPhones] = useState([]);
@@ -81,11 +83,7 @@ const PhoneUI = () => {
   useEffect(() => {
     const fetchPhones = async () => {
       try {
-        const response = await fetch('https://mama-two-lime.vercel.app/api/Phone');
-        if (!response.ok) {
-          throw new Error('Failed to fetch phones');
-        }
-        const data = await response.json();
+        const data = await phoneAPI.getAll();
         setPhones(data.length > 0 ? data : generateMockPhones());
       } catch (err) {
         setError(err.message);
@@ -192,7 +190,8 @@ const PhoneUI = () => {
   const filteredPhones = getFilteredPhones();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-12">
@@ -453,6 +452,7 @@ const PhoneUI = () => {
         </div>
       </footer>
     </div>
+    </ProtectedRoute>
   );
 };
 

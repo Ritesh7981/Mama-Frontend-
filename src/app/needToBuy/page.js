@@ -1,80 +1,54 @@
 "use client"
-import axios from 'axios';
-import React, { useState } from 'react';
-import { Smartphone, Search, Filter, ShoppingCart, Eye, Edit, Trash2, Package, Star, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Smartphone, Search, Filter, ShoppingCart, Eye, Edit, Trash2, Package, Star, Zap, AlertTriangle, RefreshCw } from 'lucide-react';
+import { phoneAPI } from '@/utils/api';
+import { ProtectedRoute } from '@/context/AuthContext';
 
 const PhoneInventoryUI = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [filterBy, setFilterBy] = useState('all');
+  const [thresholdData, setThresholdData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+ 
+  // Fetch threshold data from API
+  useEffect(() => {
+    const fetchThresholdData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await phoneAPI.getThreshold();
+        setThresholdData(data && data.length > 0 ? data : fallbackPhones);
+      } catch (err) {
+        console.error('Failed to fetch threshold data:', err);
+        setError(err.message);
+        // Use fallback data on error
+        setThresholdData(fallbackPhones);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Enhanced data based on your new response
-  const phones = [
-    {
-        "_id": "68746f1aa697c8161d93a35f",
-        "name": "iPhone 15 Pro Max",
-        "price": 159999,
-        "description": "Apple's latest flagship with A17 Pro chip, titanium frame, and improved cameras.",
-        "useIn": [
-            "Photography",
-            "Gaming",
-            "Business",
-            "Content Creation"
-        ],
-        "__v": 0,
-        "quantity": 50
-    },
-    {
-        "_id": "6874733ef900359a7c84ec34",
-        "name": "max display",
-        "price": 999,
-        "description": "Apple's latest flagship with A17 Pro chip, titanium frame, and improved cameras.",
-        "useIn": [
-            "vivo",
-            "realme",
-            "OPPO",
-            "test",
-            "vivo",
-            "realme",
-            "OPPO",
-            "test"
-        ],
-        "__v": 0,
-        "quantity": 50
-    },
-    {
-        "_id": "687473868c1bff743211f2ec",
-        "name": "max display",
-        "price": 999,
-        "quantity": 20,
-        "description": "Apple's latest flagship with A17 Pro chip, titanium frame, and improved cameras.",
-        "useIn": [
-            "vivo",
-            "realme",
-            "OPPO",
-            "test",
-            "vivo",
-            "realme",
-            "OPPO",
-            "test"
-        ],
-        "__v": 0
-    },
-    {
-        "_id": "68b40c9ee51c21c68d75723f",
-        "name": "max display",
-        "price": 999,
-        "quantity": 20,
-        "description": "Apple's latest flagship with A17 Pro chip, titanium frame, and improved cameras.",
-        "useIn": [
-            "vivo",
-            "realme",
-            "OPPO",
-            "test"
-        ],
-        "__v": 0
+    fetchThresholdData();
+  }, []);
+
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      const data = await phoneAPI.getThreshold();
+      setThresholdData(data && data.length > 0 ? data : fallbackPhones);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      setThresholdData(fallbackPhones);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Use threshold data instead of static phones
+  const phones = thresholdData;
 
   // Get all unique use cases for filtering
   const allUseCases = [...new Set(phones.flatMap(phone => phone.useIn || []))];
@@ -103,7 +77,9 @@ const PhoneInventoryUI = () => {
 
   const getQuantityStatus = (quantity) => {
     if (quantity === 0) return { color: 'text-red-400', bg: 'bg-red-900/30', label: 'Out of Stock' };
-    if (quantity <= 10) return { color: 'text-yellow-400', bg: 'bg-yellow-900/30', label: 'Low Stock' };
+    if (quantity <= 5) return { color: 'text-red-400', bg: 'bg-red-900/30', label: 'Critical Low' };
+    if (quantity <= 10) return { color: 'text-orange-400', bg: 'bg-orange-900/30', label: 'Low Stock' };
+    if (quantity <= 20) return { color: 'text-yellow-400', bg: 'bg-yellow-900/30', label: 'Needs Restock' };
     return { color: 'text-green-400', bg: 'bg-green-900/30', label: 'In Stock' };
   };
 
@@ -120,7 +96,8 @@ const PhoneInventoryUI = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -129,11 +106,11 @@ const PhoneInventoryUI = () => {
               <Package className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-300 bg-clip-text text-transparent">
-              Phone Gallery
+              Need to Buy
             </h1>
           </div>
           <p className="text-purple-200">
-            Discover the latest smartphones with cutting-edge technology and innovative features
+            Items that are running low on stock and need to be restocked
           </p>
         </div>
 
@@ -183,21 +160,54 @@ const PhoneInventoryUI = () => {
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Stats and Refresh */}
             <div className="flex items-center gap-6 text-sm">
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{phones.length}</div>
-                <div className="text-purple-300">Total Items</div>
+                <div className="text-2xl font-bold text-orange-400">{phones.length}</div>
+                <div className="text-purple-300">Low Stock Items</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">
-                  {phones.reduce((sum, phone) => sum + phone.quantity, 0)}
+                <div className="text-2xl font-bold text-red-400">
+                  {phones.reduce((sum, phone) => sum + (phone.quantity || 0), 0)}
                 </div>
-                <div className="text-purple-300">Total Stock</div>
+                <div className="text-purple-300">Total Low Stock</div>
               </div>
+              <button
+                onClick={refreshData}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-500/20 rounded-full mb-4">
+                <RefreshCw className="w-8 h-8 text-purple-400 animate-spin" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Loading Threshold Data...</h2>
+              <p className="text-purple-300">Fetching items that need to be restocked</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-400" />
+              <h3 className="text-xl font-bold text-red-300">API Error</h3>
+            </div>
+            <p className="text-red-200 mb-4">Failed to fetch threshold data: {error}</p>
+            <p className="text-red-300 text-sm">Showing fallback data. Click refresh to try again.</p>
+          </div>
+        )}
 
         {/* Phone Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -278,9 +288,9 @@ const PhoneInventoryUI = () => {
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-2">
-                    <button className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105">
+                    <button className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1.5 shadow-lg hover:shadow-red-500/25 transform hover:scale-105">
                       <ShoppingCart className="w-4 h-4" />
-                      Add to Cart
+                      Restock Now
                     </button>
                     <button className="bg-slate-600/50 hover:bg-slate-600 text-white py-2.5 px-3 rounded-lg text-sm font-medium transition-colors duration-200 backdrop-blur-sm">
                       <Eye className="w-4 h-4" />
@@ -293,23 +303,24 @@ const PhoneInventoryUI = () => {
         </div>
 
         {/* Empty State */}
-        {sortedPhones.length === 0 && (
+        {!loading && sortedPhones.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gradient-to-br from-slate-700 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-purple-300" />
+            <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Package className="w-10 h-10 text-green-300" />
             </div>
-            <h3 className="text-2xl font-semibold text-white mb-3">No phones found</h3>
-            <p className="text-purple-300 text-lg">Try adjusting your search criteria or filters</p>
+            <h3 className="text-2xl font-semibold text-white mb-3">All Items Well Stocked!</h3>
+            <p className="text-green-300 text-lg">No items currently need restocking based on threshold levels</p>
             <button 
-              onClick={() => {setSearchTerm(''); setFilterBy('all');}}
-              className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+              onClick={refreshData}
+              className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
             >
-              Clear Filters
+              Refresh Data
             </button>
           </div>
         )}
       </div>
     </div>
+    </ProtectedRoute>
   );
 };
 

@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { Trash2, AlertTriangle, Check, X, Smartphone, Tag, TagIcon } from 'lucide-react';
-import axios from 'axios';
 import { useParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from "next/navigation";
+import { phoneAPI } from '@/utils/api';
+import { ProtectedRoute } from '@/context/AuthContext';
 const DeleteItemForm = () => {
     const { id } = useParams();
     const router = useRouter();
@@ -48,18 +49,11 @@ const DeleteItemForm = () => {
     setResponse(null);
 
     try {
-      const res = await axios.post('https://mama-two-lime.vercel.app/api/delete', {
-       
-        ...formData
-      });
-
-      const data = await res.data;
-       setResponse(data);
-        setShowConfirmDialog(false);
-     
+      const data = await phoneAPI.delete(formData);
+      setResponse(data);
+      setShowConfirmDialog(false);
     } catch (err) {
-        setError(data.message || 'Failed to delete item');
-      setError('Network error: ' + err.message);
+      setError(err.message || 'Failed to delete item');
     } finally {
       setLoading(false);
     }
@@ -79,7 +73,8 @@ const DeleteItemForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -280,6 +275,7 @@ const DeleteItemForm = () => {
         </div>
       </footer>
     </div>
+    </ProtectedRoute>
   );
 };
 
