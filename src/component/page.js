@@ -53,7 +53,7 @@ const PhoneAPIForm = () => {
     setResponse(null);
 
     try {
-      const res = await fetch('http://localhost:8080/api/Phone', {
+      const res = await fetch('https://mama-two-lime.vercel.app/api/Phone', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

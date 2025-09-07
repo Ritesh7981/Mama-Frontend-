@@ -11,7 +11,7 @@ const PhoneInventoryUI = () => {
  
  useEffect( () => {
     const fetchData = async () => {
-        const res =await axios.get('http://localhost:8080/api/sellouts')
+        const res =await axios.get('https://mama-two-lime.vercel.app/api/sellouts')
         setPhones(res?.data || [])
     }
     fetchData()

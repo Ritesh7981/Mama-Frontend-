@@ -53,7 +53,7 @@ const PhoneAPIForm = () => {
     setResponse(null);
 
     try {
-      const res = await fetch('http://localhost:8080/api/Phone', {
+      const res = await fetch('https://mama-two-lime.vercel.app/api/Phone', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const PhoneAPIForm = () => {
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Phone API Form</h1>
-            <p className="text-gray-600">Submit phone data to http://localhost:8080/api/Phone</p>
+            <p className="text-gray-600">Submit phone data to https://mama-two-lime.vercel.app/api/Phone</p>
           </div>
 
           <div className="space-y-6">

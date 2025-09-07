@@ -48,7 +48,7 @@ const DeleteItemForm = () => {
     setResponse(null);
 
     try {
-      const res = await axios.post('http://localhost:8080/api/delete', {
+      const res = await axios.post('https://mama-two-lime.vercel.app/api/delete', {
        
         ...formData
       });
