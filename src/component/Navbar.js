@@ -52,7 +52,7 @@ const Navbar = () => {
               <Link href="/" className="text-purple-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-purple-800/30">
                 Home
               </Link>
-              {mounted && userRole === "admin" && (
+              {userRole === "admin" && (
                 <Link href="/addPhone" className="text-purple-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:bg-purple-800/30">
                   ADD Phones
                 </Link>
