@@ -1,19 +1,29 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Plus, X, Smartphone, Tag, AlertCircle, Check } from 'lucide-react';
+import { Plus, X, Smartphone, Tag, AlertCircle, Check, Edit2Icon } from 'lucide-react';
 import { phoneAPI } from '@/utils/api';
 import { ProtectedRoute } from '@/context/AuthContext';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
-const AddPhoneForm = () => {
+const EditPhoneForm = () => {
+
+    const { id } = useParams();
+    const router = useRouter();
+   const query= useSearchParams()
+   const name = query.get('name');
+   const price = query.get('price');
+   const description = query.get('description');
+   const quantity =query.get('quantity')
+   const useIn =query.get('useIn')
   const [formData, setFormData] = useState({
-    name: '',
-    price: 0,
-    description: '',
-    quantity: 0,
-    useIn: ['']
+    name: name,
+    price: price,
+    description: description,
+    quantity: quantity,
+    useIn: useIn ? useIn.split(',') : [''],
   });
-
+console.log(useIn ,"useindata")
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
@@ -55,7 +65,7 @@ const AddPhoneForm = () => {
     setResponse(null);
 
     try {
-      const data = await phoneAPI.create(formData);
+      const data = await phoneAPI.update(id,formData);
       setResponse(data);
       setTimeout(() => {
         resetForm();
@@ -95,10 +105,10 @@ const AddPhoneForm = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-6">
-              <Plus className="w-10 h-10 text-white" />
+              <Edit2Icon className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-5xl font-bold text-white mb-4">
-              Add <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Phone</span>
+              Editing <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Phone</span>
             </h1>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto">
               Add new smartphones to your inventory with detailed specifications and features
@@ -242,7 +252,7 @@ const AddPhoneForm = () => {
                   ) : (
                     <Plus size={20} />
                   )}
-                  {loading ? 'Adding Phone...' : 'Add Phone'}
+                  {loading ? 'Editing Phone...' : 'Edit Phone'}
                 </button>
                 
                 <button
@@ -325,4 +335,4 @@ const AddPhoneForm = () => {
   );
 };
 
-export default AddPhoneForm;
+export default EditPhoneForm;
