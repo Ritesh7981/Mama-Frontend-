@@ -1,6 +1,6 @@
 // API utility functions for centralized API management
-// const API_BASE_URL = 'https://mama-two-lime.vercel.app/api';
-const API_BASE_URL ='http://localhost:8080/api';
+const API_BASE_URL = 'https://mama-two-lime.vercel.app/api';
+// const API_BASE_URL ='http://localhost:8080/api';
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (!response.ok) {
