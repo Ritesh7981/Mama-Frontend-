@@ -26,7 +26,7 @@ const LoginPage = () => {
       router.push('/home');
     }
   }, [isAuthenticated, router]);
- const userData =localStorage.getItem("user")
+ 
   // Clear errors when switching modes
   useEffect(() => {
     clearError();
